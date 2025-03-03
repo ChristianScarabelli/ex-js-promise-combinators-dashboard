@@ -1,14 +1,14 @@
 async function getDashboardData(query) {
     try {
+        const baseUrl = `https://boolean-spec-frontend.vercel.app/freetestapi`
+
+        const apiNames = ["destinations", "weathers", "airports"];
+
         // Gestisco le 3 richieste in parallelo ritornando una promessa 
         // che si risolve sia se le richieste sono positive che negative
-        const responses = await Promise.allSettled([
-            fetch(`https://boolean-spec-frontend.vercel.app/freetestapi/destinations?search=${query}`),
-            fetch(`https://boolean-spec-frontend.vercel.app/freetestapi/weathers?search=${query}`),
-            fetch(`https://boolean-spec-frontend.vercel.app/freetestapi/airports?search=${query}`)
-        ]);
-
-        const apiNames = ["Destinations", "Weathers", "Airports"];
+        const responses = await Promise.allSettled(
+            apiNames.map(apiName => fetch(`${baseUrl}/${apiName}/?search=${query}`))
+        );
 
         // Stampo un messaggio di errore specifico per ogni richiesta fallita
         responses.forEach((response, index) => {
@@ -29,7 +29,8 @@ async function getDashboardData(query) {
         const [destinations, weathers, airports] = data;
 
         return {
-            city: destinations?.[0]?.name ?? null,
+            // se l'array esiste, ha almeno un elemento ed esiste la proprietà name, allora ritorno il valore di name, altrimenti ritorno null
+            city: destinations?.[0]?.name ?? null,  // Se destinations?.[0]?.name è undefined o null, allora viene restituito il valore di fallback null
             country: destinations?.[0]?.country ?? null,
             temperature: weathers?.[0]?.temperature ?? null,
             weather: weathers?.[0]?.weather_description ?? null,
